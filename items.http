@@ -1,0 +1,62 @@
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "arsenii",
+  "password": "12345678"
+}
+
+> {%
+    client.global.set("token", response.body.token);
+%}
+
+### 1. GET All items
+GET http://localhost:8080/api/v1/items
+Authorization: Bearer {{token}}
+Accept: application/json
+
+> {%
+    const setCookie = response.headers.valueOf("Set-Cookie");
+    if (setCookie) {
+        const m = String(setCookie).match(/XSRF-TOKEN=([^;]+)/);
+        if (m && m[1]) client.global.set("csrf", decodeURIComponent(m[1]));
+    }
+%}
+
+### 2. GET one item
+GET http://localhost:8080/api/v1/items/1
+Authorization: Bearer {{token}}
+Accept: application/json
+
+### 3. CREATE one
+POST http://localhost:8080/api/v1/items
+Authorization: Bearer {{token}}
+Cookie: XSRF-TOKEN=9ce84c48-19a6-4811-be9d-f30e905fd6e7
+X-XSRF-TOKEN: 9ce84c48-19a6-4811-be9d-f30e905fd6e7
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "hello world",
+  "description": "description test test test"
+}
+
+### 4. UPDATE one
+PUT http://localhost:8080/api/v1/items
+Authorization: Bearer {{token}}
+Cookie: XSRF-TOKEN=9ce84c48-19a6-4811-be9d-f30e905fd6e7
+X-XSRF-TOKEN: 9ce84c48-19a6-4811-be9d-f30e905fd6e7
+Content-Type: application/json
+Accept: application/json
+
+{
+  "id": 1,
+  "name": "lab-item-updated",
+  "description": "updated"
+}
+
+### 5. DELETE one
+DELETE http://localhost:8080/api/v1/items/1
+Authorization: Bearer {{token}}
+Cookie: XSRF-TOKEN=9ce84c48-19a6-4811-be9d-f30e905fd6e7
+X-XSRF-TOKEN: 9ce84c48-19a6-4811-be9d-f30e905fd6e7

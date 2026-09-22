@@ -1,46 +1,45 @@
 package rsnrdk.websec.service;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import rsnrdk.websec.model.ItemModel;
+import org.springframework.web.server.ResponseStatusException;
+import rsnrdk.websec.entity.Item;
+import rsnrdk.websec.repository.ItemRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ItemService {
-    private final List<ItemModel> items = new ArrayList<>();
 
-    {
-        items.add(new ItemModel("1", "name1", "description1"));
-        items.add(new ItemModel("2", "name2", "description2"));
-        items.add(new ItemModel("3", "name3", "description3"));
+    private final ItemRepository itemRepository;
+
+    public List<Item> getAllItems() {
+        return itemRepository.findAll();
     }
 
-    public List<ItemModel> getAllItems() {
-        return this.items;
+    public Item getItem(Long id) {
+        return itemRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found"));
     }
 
-    public ItemModel createItem(ItemModel item){
-        items.add(item);
-        System.out.println(items.size());
-        return item;
+    public Item createItem(Item item) {
+        item.setId(null);
+        return itemRepository.save(item);
     }
 
-    public ItemModel getItem(String id){
-        return items.stream()
-                .filter(item -> item.getId().equals(id))
-                .findFirst().orElse(null);
+    public Item updateItem(Item item) {
+        Item existing = getItem(item.getId());
+        existing.setName(item.getName());
+        existing.setDescription(item.getDescription());
+        return itemRepository.save(existing);
     }
 
-    public ItemModel updateItem(ItemModel item){
-        ItemModel oldItem = getItem(item.getId());
-        items.remove(oldItem);
-        items.add(item);
-        return item;
-    }
-
-    public void deleteItem(String id){
-        ItemModel item = getItem(id);
-        items.remove(item);
+    public void deleteItem(Long id) {
+        if (!itemRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found");
+        }
+        itemRepository.deleteById(id);
     }
 }

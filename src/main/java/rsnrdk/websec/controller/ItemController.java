@@ -1,9 +1,8 @@
 package rsnrdk.websec.controller;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import rsnrdk.websec.model.ItemModel;
+import rsnrdk.websec.entity.Item;
 import rsnrdk.websec.service.ItemService;
 
 import java.util.List;
@@ -16,27 +15,27 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public List<ItemModel> getAll(){
+    public List<Item> getAll() {
         return itemService.getAllItems();
     }
 
     @GetMapping("/{id}")
-    public ItemModel getItem(@PathVariable String id){
+    public Item getItem(@PathVariable Long id) {
         return itemService.getItem(id);
     }
 
     @PostMapping
-    public ItemModel createItem(@RequestBody ItemModel item){
+    public Item createItem(@RequestBody Item item) {
         return itemService.createItem(item);
     }
 
     @PutMapping
-    public ItemModel updateItem(@RequestBody ItemModel item){
+    public Item updateItem(@RequestBody Item item) {
         return itemService.updateItem(item);
     }
 
     @DeleteMapping("/{id}")
-    public   void deleteItem(@PathVariable String id){
+    public void deleteItem(@PathVariable Long id) {
         itemService.deleteItem(id);
     }
 }

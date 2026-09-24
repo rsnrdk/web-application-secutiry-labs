@@ -1,50 +1,2342 @@
 <!DOCTYPE html>
 <html lang="uk">
+
 <head>
     <meta charset="UTF-8">
-    <title>websec</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Inventory Management</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #222;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+
+        /* =====================================================
+           HEADER
+           ===================================================== */
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+
+        /* =====================================================
+           BUTTONS
+           ===================================================== */
+
+        button {
+            border: none;
+            border-radius: 6px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-keycloak {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-keycloak:hover {
+            background: #4338ca;
+        }
+
+
+        /* =====================================================
+           CARDS
+           ===================================================== */
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+
+        /* =====================================================
+           FORMS
+           ===================================================== */
+
+        .form {
+            display: grid;
+            grid-template-columns: 1fr 1fr 150px auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: left;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+
+        /* =====================================================
+           AUTH PAGE
+           ===================================================== */
+
+        .login-container {
+            max-width: 450px;
+            margin: 70px auto;
+            text-align: center;
+        }
+
+        .login-container h1 {
+            margin-bottom: 10px;
+        }
+
+        .login-container p {
+            color: #6b7280;
+            margin-bottom: 25px;
+        }
+
+        .auth-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .auth-buttons button {
+            width: 100%;
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .auth-switch {
+            margin-top: 20px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .auth-switch button {
+            background: none;
+            border: none;
+            padding: 0;
+            color: #2563eb;
+            font-size: 14px;
+        }
+
+        .auth-switch button:hover {
+            text-decoration: underline;
+        }
+
+        .auth-error {
+            display: none;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+
+        /* =====================================================
+           TABLE
+           ===================================================== */
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 14px 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 30px;
+            color: #6b7280;
+        }
+
+
+        /* =====================================================
+           NOTIFICATIONS
+           ===================================================== */
+
+        .error {
+            display: none;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            display: none;
+            background: #dcfce7;
+            color: #166534;
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+
+        /* =====================================================
+           UTILITY
+           ===================================================== */
+
+        .hidden {
+            display: none !important;
+        }
+
+
+        /* =====================================================
+           MOBILE
+           ===================================================== */
+
+        @media (max-width: 800px) {
+
+            body {
+                padding: 20px;
+            }
+
+            .form {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                align-items: flex-start;
+                gap: 15px;
+                flex-direction: column;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+        }
+
+    </style>
 </head>
+
+
 <body>
-<input id="username" placeholder="username">
-<input id="password" type="password" placeholder="password">
-<button onclick="register()">Register</button>
-<button onclick="login()">Login</button>
-<p id="out"></p>
-<button onclick="loadItems()">GET /items</button>
+
+<div class="container">
+
+
+    <!-- =====================================================
+         LOGIN / REGISTRATION
+         ===================================================== -->
+
+    <div id="loginPage" class="login-container">
+
+        <!-- LOGIN -->
+
+        <div id="loginFormContainer" class="card">
+
+            <h1>Inventory Management</h1>
+
+            <p>
+                Увійдіть до системи
+            </p>
+
+
+            <div
+                    id="authError"
+                    class="auth-error">
+            </div>
+
+
+            <form
+                    id="loginForm"
+                    class="auth-form">
+
+                <div class="form-group">
+
+                    <label for="loginUsername">
+                        Логін
+                    </label>
+
+                    <input
+                            id="loginUsername"
+                            type="text"
+                            placeholder="Введіть логін"
+                            autocomplete="username"
+                            required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="loginPassword">
+                        Пароль
+                    </label>
+
+                    <input
+                            id="loginPassword"
+                            type="password"
+                            placeholder="Введіть пароль"
+                            autocomplete="current-password"
+                            required>
+
+                </div>
+
+
+                <button
+                        id="loginButton"
+                        type="submit"
+                        class="btn-primary">
+
+                    Увійти
+
+                </button>
+
+            </form>
+
+
+            <div class="auth-divider">
+                або
+            </div>
+
+
+            <div class="auth-buttons">
+
+                <button
+                        type="button"
+                        class="btn-keycloak"
+                        onclick="loginWithKeycloak()">
+
+                    Увійти через Keycloak
+
+                </button>
+
+            </div>
+
+
+            <div class="auth-switch">
+
+                Ще немає акаунта?
+
+                <button
+                        type="button"
+                        onclick="showRegisterForm()">
+
+                    Зареєструватися
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- REGISTRATION -->
+
+        <div
+                id="registerFormContainer"
+                class="card hidden">
+
+            <h1>Створення акаунта</h1>
+
+            <p>
+                Зареєструйте нового користувача
+            </p>
+
+
+            <div
+                    id="registerError"
+                    class="auth-error">
+            </div>
+
+
+            <form
+                    id="registerForm"
+                    class="auth-form">
+
+                <div class="form-group">
+
+                    <label for="registerUsername">
+                        Логін
+                    </label>
+
+                    <input
+                            id="registerUsername"
+                            type="text"
+                            placeholder="Введіть логін"
+                            autocomplete="username"
+                            minlength="3"
+                            maxlength="50"
+                            required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="registerPassword">
+                        Пароль
+                    </label>
+
+                    <input
+                            id="registerPassword"
+                            type="password"
+                            placeholder="Мінімум 6 символів"
+                            autocomplete="new-password"
+                            minlength="6"
+                            maxlength="100"
+                            required>
+
+                </div>
+
+
+                <button
+                        id="registerButton"
+                        type="submit"
+                        class="btn-primary">
+
+                    Зареєструватися
+
+                </button>
+
+            </form>
+
+
+            <div class="auth-switch">
+
+                Вже є акаунт?
+
+                <button
+                        type="button"
+                        onclick="showLoginForm()">
+
+                    Увійти
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         APPLICATION
+         ===================================================== -->
+
+    <div
+            id="appPage"
+            class="hidden">
+
+
+        <!-- HEADER -->
+
+        <div class="header">
+
+            <div>
+
+                <h1>
+                    Inventory Management
+                </h1>
+
+                <p id="userInfo"></p>
+
+            </div>
+
+
+            <div class="user-info">
+
+                <button
+                        class="btn-danger"
+                        onclick="logout()">
+
+                    Вийти
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             NOTIFICATIONS
+             ================================================= -->
+
+        <div
+                id="errorMessage"
+                class="error">
+        </div>
+
+
+        <div
+                id="successMessage"
+                class="success">
+        </div>
+
+
+        <!-- =================================================
+             CREATE / EDIT FORM
+             ================================================= -->
+
+        <div class="card">
+
+            <h2 id="formTitle">
+                Додати товар
+            </h2>
+
+
+            <form
+                    id="itemForm"
+                    class="form">
+
+
+                <div class="form-group">
+
+                    <label for="name">
+                        Назва
+                    </label>
+
+                    <input
+                            id="name"
+                            type="text"
+                            placeholder="Наприклад: Laptop"
+                            required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="description">
+                        Опис
+                    </label>
+
+                    <input
+                            id="description"
+                            type="text"
+                            placeholder="Опис товару">
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="price">
+                        Ціна
+                    </label>
+
+                    <input
+                            id="price"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            required>
+
+                </div>
+
+
+                <div>
+
+                    <button
+                            id="submitButton"
+                            type="submit"
+                            class="btn-primary">
+
+                        Додати
+
+                    </button>
+
+                </div>
+
+            </form>
+
+
+            <br>
+
+
+            <button
+                    id="cancelEditButton"
+                    class="btn-secondary hidden"
+                    type="button"
+                    onclick="cancelEdit()">
+
+                Скасувати редагування
+
+            </button>
+
+        </div>
+
+
+        <!-- =================================================
+             ITEMS
+             ================================================= -->
+
+        <div class="card">
+
+            <h2>
+                Товари
+            </h2>
+
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+                        <th>Назва</th>
+                        <th>Опис</th>
+                        <th>Ціна</th>
+                        <th>Дії</th>
+
+                    </tr>
+
+                    </thead>
+
+
+                    <tbody id="itemsTableBody">
+                    </tbody>
+
+                </table>
+
+
+                <div
+                        id="emptyMessage"
+                        class="empty hidden">
+
+                    Товарів поки немає.
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- =================================================
+     ADMIN DEMONSTRATION
+     ================================================= -->
+
+        <div class="card">
+
+            <h2>
+                Адміністративні функції
+            </h2>
+
+            <p>
+                Ці endpoints доступні тільки користувачам з роллю ADMIN.
+            </p>
+
+            <div class="actions">
+
+                <button
+                        type="button"
+                        class="btn-primary"
+                        onclick="callAdminEndpoint()">
+
+                    SecurityFilterChain ADMIN
+
+                </button>
+
+
+                <button
+                        type="button"
+                        class="btn-primary"
+                        onclick="callPreAuthorizeEndpoint()">
+
+                    @PreAuthorize ADMIN
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 <script>
-    let token = '';
-    async function register() {
-        const r = await fetch('/api/v1/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username: document.getElementById('username').value,
-                password: document.getElementById('password').value
-            })
-        });
-        const data = await r.json();
-        token = data.token || '';
-        document.getElementById('out').textContent = JSON.stringify(data);
+
+
+    const API_URL = "/api/v1/items";
+
+    const AUTH_API_URL = "/api/v1/auth";
+
+
+    let items = [];
+
+    let editingItemId = null;
+
+    /*
+ * =========================================================
+ * ADMIN ENDPOINTS
+ * =========================================================
+ */
+
+    async function callAdminEndpoint() {
+
+        hideMessages();
+
+        try {
+
+            const response =
+                await apiFetch(
+                    `${API_URL}/admin`,
+                    {
+                        method: "GET"
+                    }
+                );
+
+
+            if (response.status === 401) {
+
+                showError(
+                    "401 Unauthorized"
+                );
+
+                return;
+
+            }
+
+
+            if (response.status === 403) {
+
+                showError(
+                    "403 Forbidden"
+                );
+
+                return;
+
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Помилка: ${response.status}`
+                );
+
+            }
+
+
+            const message =
+                await response.text();
+
+
+            showSuccess(message);
+
+        } catch (error) {
+
+            console.error(error);
+
+            showError(error.message);
+
+        }
+
     }
-    async function login() {
-        const r = await fetch('/api/v1/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username: document.getElementById('username').value,
-                password: document.getElementById('password').value
-            })
-        });
-        const data = await r.json();
-        token = data.token || '';
-        document.getElementById('out').textContent = JSON.stringify(data);
+
+
+    async function callPreAuthorizeEndpoint() {
+
+        hideMessages();
+
+        try {
+
+            const response =
+                await apiFetch(
+                    `${API_URL}/admin/preauthorize`,
+                    {
+                        method: "GET"
+                    }
+                );
+
+
+            if (response.status === 401) {
+
+                showError(
+                    "401 Unauthorized: користувач не авторизований"
+                );
+
+                return;
+
+            }
+
+
+            if (response.status === 403) {
+
+                showError(
+                    "403 Forbidden: для цього endpoint потрібна роль ADMIN"
+                );
+
+                return;
+
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Помилка: ${response.status}`
+                );
+
+            }
+
+
+            const message =
+                await response.text();
+
+
+            showSuccess(message);
+
+        } catch (error) {
+
+            console.error(error);
+
+            showError(error.message);
+
+        }
+
     }
+
+
+    /*
+     * =========================================================
+     * AUTHENTICATION
+     * =========================================================
+     */
+
+
+    async function checkAuthentication() {
+
+        try {
+
+            const response = await apiFetch(API_URL, {
+                method: "GET"
+            });
+
+
+            if (response.status === 401) {
+
+                showLoginPage();
+
+                return;
+
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Помилка перевірки авторизації: ${response.status}`
+                );
+
+            }
+
+
+            items = await response.json();
+
+
+            showAppPage();
+
+            renderItems();
+
+        } catch (error) {
+
+            console.error(error);
+
+            showLoginPage();
+
+        }
+
+    }
+
+
+    /*
+     * =========================================================
+     * API AUTH HEADERS
+     * =========================================================
+     *
+     * Якщо користувач увійшов через звичайний login,
+     * додаємо JWT.
+     *
+     * Якщо JWT немає — використовується Keycloak session.
+     */
+
+
+    function getAuthHeaders(headers = {}) {
+
+        const token =
+            localStorage.getItem("access_token");
+
+
+        if (token) {
+
+            headers["Authorization"] =
+                `Bearer ${token}`;
+
+        }
+
+
+        return headers;
+
+    }
+
+
+    /*
+     * =========================================================
+     * API FETCH
+     * =========================================================
+     *
+     * Єдина функція для всіх API-запитів.
+     *
+     * Вона автоматично:
+     *
+     * 1. додає JWT, якщо він є;
+     * 2. передає cookies Keycloak;
+     * 3. передає CSRF token.
+     */
+
+
+    async function apiFetch(url, options = {}) {
+
+        const method =
+            (options.method || "GET").toUpperCase();
+
+
+        const headers =
+            getAuthHeaders({
+                ...(options.headers || {})
+            });
+
+
+        /*
+         * Для CRUD додаємо CSRF token.
+         */
+
+        if (
+            method === "POST" ||
+            method === "PUT" ||
+            method === "DELETE" ||
+            method === "PATCH"
+        ) {
+
+            const csrfToken =
+                getCsrfToken();
+
+
+            if (csrfToken) {
+
+                headers["X-XSRF-TOKEN"] =
+                    csrfToken;
+
+            }
+
+        }
+
+
+        return fetch(url, {
+
+            ...options,
+
+            headers: headers,
+
+            credentials: "include"
+
+        });
+
+    }
+
+
+    /*
+     * =========================================================
+     * KEYCLOAK LOGIN
+     * =========================================================
+     */
+
+
+    function loginWithKeycloak() {
+
+        window.location.href =
+            "/oauth2/authorization/keycloak";
+
+    }
+
+
+    /*
+     * =========================================================
+     * NORMAL LOGIN
+     * =========================================================
+     */
+
+
+    document
+        .getElementById("loginForm")
+        .addEventListener(
+            "submit",
+            async function (event) {
+
+                event.preventDefault();
+
+
+                hideAuthError();
+
+
+                const username =
+                    document
+                        .getElementById("loginUsername")
+                        .value
+                        .trim();
+
+
+                const password =
+                    document
+                        .getElementById("loginPassword")
+                        .value;
+
+
+                const button =
+                    document
+                        .getElementById("loginButton");
+
+
+                button.disabled = true;
+
+                button.textContent =
+                    "Вхід...";
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            `${AUTH_API_URL}/login`,
+                            {
+
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify({
+                                        username,
+                                        password
+                                    })
+
+                            }
+                        );
+
+
+                    if (!response.ok) {
+
+                        if (response.status === 401) {
+
+                            throw new Error(
+                                "Неправильний логін або пароль"
+                            );
+
+                        }
+
+
+                        throw new Error(
+                            `Помилка входу: ${response.status}`
+                        );
+
+                    }
+
+
+                    /*
+                     * /login повертає JWT як plain text.
+                     */
+
+                    const token =
+                        await response.text();
+
+
+                    if (!token) {
+
+                        throw new Error(
+                            "Сервер не повернув JWT"
+                        );
+
+                    }
+
+
+                    localStorage.setItem(
+                        "access_token",
+                        token
+                    );
+
+
+                    document
+                        .getElementById("loginForm")
+                        .reset();
+
+
+                    await loadItems();
+
+
+                    showAppPage();
+
+
+                    updateUserInfo(username);
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    showAuthError(
+                        error.message
+                    );
+
+                } finally {
+
+                    button.disabled = false;
+
+                    button.textContent =
+                        "Увійти";
+
+                }
+
+            }
+        );
+
+
+    /*
+     * =========================================================
+     * REGISTRATION
+     * =========================================================
+     */
+
+
+    document
+        .getElementById("registerForm")
+        .addEventListener(
+            "submit",
+            async function (event) {
+
+                event.preventDefault();
+
+
+                hideRegisterError();
+
+
+                const username =
+                    document
+                        .getElementById("registerUsername")
+                        .value
+                        .trim();
+
+
+                const password =
+                    document
+                        .getElementById("registerPassword")
+                        .value;
+
+
+                const button =
+                    document
+                        .getElementById("registerButton");
+
+
+                button.disabled = true;
+
+                button.textContent =
+                    "Реєстрація...";
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            `${AUTH_API_URL}/register`,
+                            {
+
+                                method: "POST",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json"
+                                },
+
+                                body:
+                                    JSON.stringify({
+                                        username,
+                                        password
+                                    })
+
+                            }
+                        );
+
+
+                    if (!response.ok) {
+
+                        if (response.status === 400) {
+
+                            throw new Error(
+                                "Перевірте правильність введених даних"
+                            );
+
+                        }
+
+
+                        if (response.status === 409) {
+
+                            throw new Error(
+                                "Користувач з таким логіном вже існує"
+                            );
+
+                        }
+
+
+                        throw new Error(
+                            `Помилка реєстрації: ${response.status}`
+                        );
+
+                    }
+
+
+                    /*
+                     * Реєстрація успішна.
+                     *
+                     * Тепер показуємо login.
+                     */
+
+                    document
+                        .getElementById("registerForm")
+                        .reset();
+
+
+                    showLoginForm();
+
+
+                    document
+                        .getElementById("loginUsername")
+                        .value =
+                        username;
+
+
+                    showSuccessAuthMessage(
+                        "Акаунт успішно створено. Тепер увійдіть."
+                    );
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    showRegisterError(
+                        error.message
+                    );
+
+                } finally {
+
+                    button.disabled = false;
+
+                    button.textContent =
+                        "Зареєструватися";
+
+                }
+
+            }
+        );
+
+
+    /*
+     * =========================================================
+     * LOGIN / REGISTER SWITCH
+     * =========================================================
+     */
+
+
+    function showLoginForm() {
+
+        document
+            .getElementById("loginFormContainer")
+            .classList
+            .remove("hidden");
+
+
+        document
+            .getElementById("registerFormContainer")
+            .classList
+            .add("hidden");
+
+
+        hideRegisterError();
+
+    }
+
+
+    function showRegisterForm() {
+
+        document
+            .getElementById("loginFormContainer")
+            .classList
+            .add("hidden");
+
+
+        document
+            .getElementById("registerFormContainer")
+            .classList
+            .remove("hidden");
+
+
+        hideAuthError();
+
+    }
+
+
+    /*
+     * =========================================================
+     * LOGOUT
+     * =========================================================
+     */
+
+
+    function logout() {
+
+        /*
+         * Якщо був звичайний JWT login,
+         * достатньо видалити JWT.
+         */
+
+        const hasJwt =
+            localStorage.getItem("access_token");
+
+
+        if (hasJwt) {
+
+            localStorage.removeItem(
+                "access_token"
+            );
+
+
+            items = [];
+
+            editingItemId = null;
+
+            resetForm();
+
+            showLoginPage();
+
+            return;
+
+        }
+
+
+        /*
+         * Якщо JWT немає, значить користувач,
+         * ймовірно, авторизований через Keycloak.
+         *
+         * Spring Security logout endpoint
+         * потрібно викликати POST-ом через CSRF.
+         */
+
+        const csrfToken =
+            getCsrfToken();
+
+
+        fetch("/logout", {
+
+            method: "POST",
+
+            headers: csrfToken
+                ? {
+                    "X-XSRF-TOKEN":
+                    csrfToken
+                }
+                : {},
+
+            credentials: "include"
+
+        }).finally(() => {
+
+            window.location.href = "/";
+
+        });
+
+    }
+
+
+    /*
+     * =========================================================
+     * PAGE SWITCHING
+     * =========================================================
+     */
+
+
+    function showLoginPage() {
+
+        document
+            .getElementById("loginPage")
+            .classList
+            .remove("hidden");
+
+
+        document
+            .getElementById("appPage")
+            .classList
+            .add("hidden");
+
+
+        /*
+         * Якщо JWT більше не валідний,
+         * не залишаємо старий токен.
+         */
+
+    }
+
+
+    function showAppPage() {
+
+        document
+            .getElementById("loginPage")
+            .classList
+            .add("hidden");
+
+
+        document
+            .getElementById("appPage")
+            .classList
+            .remove("hidden");
+
+    }
+
+
+    /*
+     * =========================================================
+     * USER INFO
+     * =========================================================
+     */
+
+
+    function updateUserInfo(username) {
+
+        const userInfo =
+            document.getElementById("userInfo");
+
+
+        if (!username) {
+
+            userInfo.textContent =
+                "";
+
+            return;
+
+        }
+
+
+        userInfo.textContent =
+            `Користувач: ${username}`;
+
+    }
+
+
+    /*
+     * =========================================================
+     * CSRF
+     * =========================================================
+     */
+
+
+    function getCsrfToken() {
+
+        const cookie =
+            document.cookie
+                .split("; ")
+                .find(
+                    row =>
+                        row.startsWith(
+                            "XSRF-TOKEN="
+                        )
+                );
+
+
+        if (!cookie) {
+
+            return null;
+
+        }
+
+
+        return decodeURIComponent(
+            cookie.split("=")[1]
+        );
+
+    }
+
+
+    /*
+     * =========================================================
+     * GET ITEMS
+     * =========================================================
+     */
+
+
     async function loadItems() {
-        const r = await fetch('/api/v1/items', {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-        document.getElementById('out').textContent = await r.text();
+
+        hideMessages();
+
+
+        try {
+
+            const response =
+                await apiFetch(API_URL, {
+                    method: "GET"
+                });
+
+
+            if (response.status === 401) {
+
+                /*
+                 * JWT більше не працює.
+                 */
+
+                localStorage.removeItem(
+                    "access_token"
+                );
+
+
+                showLoginPage();
+
+                return;
+
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Помилка отримання товарів: ${response.status}`
+                );
+
+            }
+
+
+            items =
+                await response.json();
+
+
+            renderItems();
+
+
+        } catch (error) {
+
+            showError(
+                error.message
+            );
+
+        }
+
     }
+
+
+    /*
+     * =========================================================
+     * RENDER ITEMS
+     * =========================================================
+     */
+
+
+    function renderItems() {
+
+        const tableBody =
+            document.getElementById(
+                "itemsTableBody"
+            );
+
+
+        const emptyMessage =
+            document.getElementById(
+                "emptyMessage"
+            );
+
+
+        tableBody.innerHTML =
+            "";
+
+
+        if (items.length === 0) {
+
+            emptyMessage
+                .classList
+                .remove("hidden");
+
+            return;
+
+        }
+
+
+        emptyMessage
+            .classList
+            .add("hidden");
+
+
+        items.forEach(item => {
+
+            const row =
+                document.createElement("tr");
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${item.id}
+                </td>
+
+                <td>
+                    ${escapeHtml(item.name)}
+                </td>
+
+                <td>
+                    ${escapeHtml(item.description || "")}
+                </td>
+
+                <td>
+                    ${item.price ?? "—"}
+                </td>
+
+                <td>
+
+                    <div class="actions">
+
+                        <button
+                            class="btn-secondary"
+                            onclick="editItem(${item.id})">
+
+                            Редагувати
+
+                        </button>
+
+
+                        <button
+                            class="btn-danger"
+                            onclick="deleteItem(${item.id})">
+
+                            Видалити
+
+                        </button>
+
+                    </div>
+
+                </td>
+
+            `;
+
+
+            tableBody.appendChild(row);
+
+        });
+
+    }
+
+
+    /*
+     * =========================================================
+     * CREATE / UPDATE
+     * =========================================================
+     */
+
+
+    document
+        .getElementById("itemForm")
+        .addEventListener(
+            "submit",
+            async function (event) {
+
+                event.preventDefault();
+
+                hideMessages();
+
+
+                const name =
+                    document
+                        .getElementById("name")
+                        .value
+                        .trim();
+
+
+                const description =
+                    document
+                        .getElementById("description")
+                        .value
+                        .trim();
+
+
+                const price =
+                    document
+                        .getElementById("price")
+                        .value;
+
+
+                const item = {
+
+                    name: name,
+
+                    description:
+                        description || null,
+
+                    price:
+                        price === ""
+                            ? null
+                            : Number(price)
+
+                };
+
+
+                try {
+
+
+                    /*
+                     * =================================================
+                     * CREATE
+                     * =================================================
+                     */
+
+                    if (editingItemId === null) {
+
+                        const response =
+                            await apiFetch(
+                                API_URL,
+                                {
+
+                                    method: "POST",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body:
+                                        JSON.stringify(item)
+
+                                }
+                            );
+
+
+                        if (response.status === 401) {
+
+                            localStorage.removeItem(
+                                "access_token"
+                            );
+
+
+                            showLoginPage();
+
+                            return;
+
+                        }
+
+
+                        if (!response.ok) {
+
+                            throw new Error(
+                                `Помилка створення товару: ${response.status}`
+                            );
+
+                        }
+
+
+                        showSuccess(
+                            "Товар успішно створено"
+                        );
+
+                    }
+
+
+                    /*
+                     * =================================================
+                     * UPDATE
+                     * =================================================
+                     */
+
+                    else {
+
+                        item.id =
+                            editingItemId;
+
+
+                        const response =
+                            await apiFetch(
+                                API_URL,
+                                {
+
+                                    method: "PUT",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body:
+                                        JSON.stringify(item)
+
+                                }
+                            );
+
+
+                        if (response.status === 401) {
+
+                            localStorage.removeItem(
+                                "access_token"
+                            );
+
+
+                            showLoginPage();
+
+                            return;
+
+                        }
+
+
+                        if (!response.ok) {
+
+                            throw new Error(
+                                `Помилка оновлення товару: ${response.status}`
+                            );
+
+                        }
+
+
+                        showSuccess(
+                            "Товар успішно оновлено"
+                        );
+
+                    }
+
+
+                    resetForm();
+
+                    await loadItems();
+
+
+                } catch (error) {
+
+                    showError(
+                        error.message
+                    );
+
+                }
+
+            }
+        );
+
+
+    /*
+     * =========================================================
+     * EDIT ITEM
+     * =========================================================
+     */
+
+
+    function editItem(id) {
+
+        const item =
+            items.find(
+                item => item.id === id
+            );
+
+
+        if (!item) {
+
+            return;
+
+        }
+
+
+        editingItemId =
+            id;
+
+
+        document
+            .getElementById("name")
+            .value =
+            item.name || "";
+
+
+        document
+            .getElementById("description")
+            .value =
+            item.description || "";
+
+
+        document
+            .getElementById("price")
+            .value =
+            item.price ?? "";
+
+
+        document
+            .getElementById("formTitle")
+            .textContent =
+            "Редагувати товар";
+
+
+        document
+            .getElementById("submitButton")
+            .textContent =
+            "Зберегти";
+
+
+        document
+            .getElementById("cancelEditButton")
+            .classList
+            .remove("hidden");
+
+
+        window.scrollTo({
+
+            top: 0,
+
+            behavior: "smooth"
+
+        });
+
+    }
+
+
+    /*
+     * =========================================================
+     * CANCEL EDIT
+     * =========================================================
+     */
+
+
+    function cancelEdit() {
+
+        resetForm();
+
+    }
+
+
+    function resetForm() {
+
+        editingItemId =
+            null;
+
+
+        document
+            .getElementById("itemForm")
+            .reset();
+
+
+        document
+            .getElementById("formTitle")
+            .textContent =
+            "Додати товар";
+
+
+        document
+            .getElementById("submitButton")
+            .textContent =
+            "Додати";
+
+
+        document
+            .getElementById("cancelEditButton")
+            .classList
+            .add("hidden");
+
+    }
+
+
+    /*
+     * =========================================================
+     * DELETE ITEM
+     * =========================================================
+     */
+
+
+    async function deleteItem(id) {
+
+        const confirmed =
+            confirm(
+                "Ви дійсно хочете видалити цей товар?"
+            );
+
+
+        if (!confirmed) {
+
+            return;
+
+        }
+
+
+        hideMessages();
+
+
+        try {
+
+            const response =
+                await apiFetch(
+                    `${API_URL}/${id}`,
+                    {
+
+                        method: "DELETE"
+
+                    }
+                );
+
+
+            if (response.status === 401) {
+
+                localStorage.removeItem(
+                    "access_token"
+                );
+
+
+                showLoginPage();
+
+                return;
+
+            }
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Помилка видалення товару: ${response.status}`
+                );
+
+            }
+
+
+            showSuccess(
+                "Товар успішно видалено"
+            );
+
+
+            await loadItems();
+
+
+        } catch (error) {
+
+            showError(
+                error.message
+            );
+
+        }
+
+    }
+
+
+    /*
+     * =========================================================
+     * SECURITY
+     * =========================================================
+     */
+
+
+    function escapeHtml(value) {
+
+        const div =
+            document.createElement("div");
+
+
+        div.textContent =
+            value;
+
+
+        return div.innerHTML;
+
+    }
+
+
+    /*
+     * =========================================================
+     * AUTH NOTIFICATIONS
+     * =========================================================
+     */
+
+
+    function showAuthError(message) {
+
+        const element =
+            document.getElementById(
+                "authError"
+            );
+
+
+        element.textContent =
+            message;
+
+
+        element.style.display =
+            "block";
+
+    }
+
+
+    function hideAuthError() {
+
+        const element =
+            document.getElementById(
+                "authError"
+            );
+
+
+        element.style.display =
+            "none";
+
+
+        element.textContent =
+            "";
+
+    }
+
+
+    function showRegisterError(message) {
+
+        const element =
+            document.getElementById(
+                "registerError"
+            );
+
+
+        element.textContent =
+            message;
+
+
+        element.style.display =
+            "block";
+
+    }
+
+
+    function hideRegisterError() {
+
+        const element =
+            document.getElementById(
+                "registerError"
+            );
+
+
+        element.style.display =
+            "none";
+
+
+        element.textContent =
+            "";
+
+    }
+
+
+    function showSuccessAuthMessage(message) {
+
+        /*
+         * Використовуємо alert тільки для повідомлення
+         * після успішної реєстрації.
+         */
+
+        alert(message);
+
+    }
+
+
+    /*
+     * =========================================================
+     * APPLICATION NOTIFICATIONS
+     * =========================================================
+     */
+
+
+    function showError(message) {
+
+        const element =
+            document.getElementById(
+                "errorMessage"
+            );
+
+
+        element.textContent =
+            message;
+
+
+        element.style.display =
+            "block";
+
+    }
+
+
+    function showSuccess(message) {
+
+        const element =
+            document.getElementById(
+                "successMessage"
+            );
+
+
+        element.textContent =
+            message;
+
+
+        element.style.display =
+            "block";
+
+
+        setTimeout(() => {
+
+            element.style.display =
+                "none";
+
+        }, 3000);
+
+    }
+
+
+    function hideMessages() {
+
+        document
+            .getElementById("errorMessage")
+            .style
+            .display =
+            "none";
+
+
+        document
+            .getElementById("successMessage")
+            .style
+            .display =
+            "none";
+
+    }
+
+
+    /*
+     * =========================================================
+     * START APPLICATION
+     * =========================================================
+     */
+
+    checkAuthentication();
+
 </script>
+
 </body>
+
 </html>

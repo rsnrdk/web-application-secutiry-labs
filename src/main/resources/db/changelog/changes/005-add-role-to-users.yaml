@@ -1,0 +1,17 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: 005-add-role-to-users
+      author: rsnrdk
+      changes:
+
+        - addColumn:
+            tableName: users
+            columns:
+
+              - column:
+                  name: role
+                  type: VARCHAR(50)
+                  defaultValue: USER
+                  constraints:
+                    nullable: false

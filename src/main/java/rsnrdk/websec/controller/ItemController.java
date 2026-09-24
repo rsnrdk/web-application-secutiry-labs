@@ -1,6 +1,7 @@
 package rsnrdk.websec.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import rsnrdk.websec.dto.ItemDto;
 import rsnrdk.websec.service.ItemService;
@@ -37,5 +38,16 @@ public class ItemController {
     @DeleteMapping("/{id}")
     public void deleteItem(@PathVariable Long id) {
         itemService.deleteItem(id);
+    }
+
+    @GetMapping("/admin")
+    public String adminOnly() {
+        return "Admin access granted";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/preauthorize")
+    public String adminPreAuthorize() {
+        return "Admin access granted via @PreAuthorize";
     }
 }

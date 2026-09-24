@@ -1,0 +1,14 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: 004-add-price-to-items
+      author: rsnrdk
+      changes:
+
+        - addColumn:
+            tableName: items
+            columns:
+
+              - column:
+                  name: price
+                  type: DECIMAL(10,2)

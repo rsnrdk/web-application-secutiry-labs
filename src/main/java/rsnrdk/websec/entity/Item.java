@@ -3,6 +3,8 @@ package rsnrdk.websec.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "items")
 @Getter
@@ -20,4 +22,7 @@ public class Item {
     private String name;
 
     private String description;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal price;
 }

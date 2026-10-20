@@ -1,0 +1,65 @@
+### Lab 6 — method security annotations (@PreAuthorize, @Secured, @RolesAllowed)
+### Run the login requests first.
+
+### Login as USER
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{ "username": "user", "password": "user123" }
+
+> {% client.global.set("userToken", response.body); %}
+
+### Login as ADMIN
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{ "username": "admin", "password": "admin123" }
+
+> {% client.global.set("adminToken", response.body); %}
+
+### Login as SUPERADMIN
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{ "username": "superadmin", "password": "superadmin123" }
+
+> {% client.global.set("superadminToken", response.body); %}
+
+### 1. USER -> profile, @PreAuthorize("isAuthenticated()") (expected 200)
+GET http://localhost:8080/api/v1/annotated/profile
+Authorization: Bearer {{userToken}}
+
+### 2. USER -> @PreAuthorize("hasAnyRole('USER','ADMIN','SUPERADMIN')") (expected 200)
+GET http://localhost:8080/api/v1/annotated/user
+Authorization: Bearer {{userToken}}
+
+### 3. USER -> @Secured({"ROLE_ADMIN","ROLE_SUPERADMIN"}) (expected 403)
+GET http://localhost:8080/api/v1/annotated/admin
+Authorization: Bearer {{userToken}}
+
+### 4. ADMIN -> @Secured({"ROLE_ADMIN","ROLE_SUPERADMIN"}) (expected 200)
+GET http://localhost:8080/api/v1/annotated/admin
+Authorization: Bearer {{adminToken}}
+
+### 5. ADMIN -> @RolesAllowed("SUPERADMIN") (expected 403)
+GET http://localhost:8080/api/v1/annotated/superadmin
+Authorization: Bearer {{adminToken}}
+
+### 6. SUPERADMIN -> @RolesAllowed("SUPERADMIN") (expected 200)
+GET http://localhost:8080/api/v1/annotated/superadmin
+Authorization: Bearer {{superadminToken}}
+
+### 7. USER -> own details, #username == authentication.name (expected 200)
+GET http://localhost:8080/api/v1/annotated/users/user
+Authorization: Bearer {{userToken}}
+
+### 8. USER -> someone else's details (expected 403)
+GET http://localhost:8080/api/v1/annotated/users/admin
+Authorization: Bearer {{userToken}}
+
+### 9. ADMIN -> someone else's details (expected 200)
+GET http://localhost:8080/api/v1/annotated/users/user
+Authorization: Bearer {{adminToken}}
+
+### 10. Anonymous -> profile (expected 401)
+GET http://localhost:8080/api/v1/annotated/profile

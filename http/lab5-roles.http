@@ -1,0 +1,86 @@
+### Lab 5 — URL-based access restrictions (SecurityConfig)
+### Users (seeded by DataInitializer): user/user123 (USER), admin/admin123 (ADMIN), superadmin/superadmin123 (SUPERADMIN)
+### Run the login requests first: they store tokens and the CSRF cookie value.
+
+### Login as USER
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{ "username": "user", "password": "user123" }
+
+> {%
+    client.global.set("userToken", response.body);
+    const setCookie = String(response.headers.valueOf("Set-Cookie") || "");
+    const m = setCookie.match(/XSRF-TOKEN=([^;]+)/);
+    if (m) client.global.set("csrf", decodeURIComponent(m[1]));
+%}
+
+### Login as ADMIN
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{ "username": "admin", "password": "admin123" }
+
+> {% client.global.set("adminToken", response.body); %}
+
+### Login as SUPERADMIN
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{ "username": "superadmin", "password": "superadmin123" }
+
+> {% client.global.set("superadminToken", response.body); %}
+
+### 1. Anonymous -> public route (expected 200)
+GET http://localhost:8080/api/v1/access/public
+
+### 2. Anonymous -> user route (expected 401)
+GET http://localhost:8080/api/v1/access/user
+
+### 3. USER -> user route (expected 200)
+GET http://localhost:8080/api/v1/access/user
+Authorization: Bearer {{userToken}}
+
+### 4. USER -> admin route (expected 403)
+GET http://localhost:8080/api/v1/access/admin
+Authorization: Bearer {{userToken}}
+
+### 5. ADMIN -> admin route (expected 200)
+GET http://localhost:8080/api/v1/access/admin
+Authorization: Bearer {{adminToken}}
+
+### 6. ADMIN -> superadmin route (expected 403)
+GET http://localhost:8080/api/v1/access/superadmin
+Authorization: Bearer {{adminToken}}
+
+### 7. SUPERADMIN -> superadmin route (expected 200)
+GET http://localhost:8080/api/v1/access/superadmin
+Authorization: Bearer {{superadminToken}}
+
+### 8. USER -> create item (expected 403)
+POST http://localhost:8080/api/v1/items
+Authorization: Bearer {{userToken}}
+X-XSRF-TOKEN: {{csrf}}
+Content-Type: application/json
+
+{ "name": "user item", "description": "should be rejected", "price": 10 }
+
+### 9. ADMIN -> create item (expected 200)
+POST http://localhost:8080/api/v1/items
+Authorization: Bearer {{adminToken}}
+X-XSRF-TOKEN: {{csrf}}
+Content-Type: application/json
+
+{ "name": "admin item", "description": "created by admin", "price": 99.99 }
+
+> {% client.global.set("itemId", response.body.id); %}
+
+### 10. ADMIN -> delete item (expected 403, SUPERADMIN only)
+DELETE http://localhost:8080/api/v1/items/{{itemId}}
+Authorization: Bearer {{adminToken}}
+X-XSRF-TOKEN: {{csrf}}
+
+### 11. SUPERADMIN -> delete item (expected 200)
+DELETE http://localhost:8080/api/v1/items/{{itemId}}
+Authorization: Bearer {{superadminToken}}
+X-XSRF-TOKEN: {{csrf}}

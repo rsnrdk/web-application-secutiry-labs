@@ -3,6 +3,7 @@ package rsnrdk.websec.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -23,7 +24,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(securedEnabled = true, jsr250Enabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -56,11 +57,27 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/oauth2/**",
                                 "/login/**",
-                                "/api/v1/auth/**"
+                                "/api/v1/auth/**",
+                                "/api/v1/access/public"
                         ).permitAll()
 
-                        .requestMatchers("/api/v1/items/admin")
-                        .hasRole("ADMIN")
+                        .requestMatchers("/api/v1/access/user")
+                        .hasAnyRole("USER", "ADMIN", "SUPERADMIN")
+
+                        .requestMatchers("/api/v1/access/admin", "/api/v1/items/admin")
+                        .hasAnyRole("ADMIN", "SUPERADMIN")
+
+                        .requestMatchers("/api/v1/access/superadmin")
+                        .hasRole("SUPERADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/items")
+                        .hasAnyRole("ADMIN", "SUPERADMIN")
+
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/items")
+                        .hasAnyRole("ADMIN", "SUPERADMIN")
+
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/items/**")
+                        .hasRole("SUPERADMIN")
 
                         .anyRequest()
                         .authenticated()

@@ -5,6 +5,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import rsnrdk.websec.dto.ItemDto;
 import rsnrdk.websec.service.ItemService;
+import rsnrdk.websec.annotation.CreatedPostMapping;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class ItemController {
         return itemService.getItem(id);
     }
 
-    @PostMapping
+    @CreatedPostMapping
     public ItemDto createItem(@RequestBody ItemDto dto) {
         return itemService.createItem(dto);
     }

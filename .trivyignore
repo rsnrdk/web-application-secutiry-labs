@@ -1,0 +1,7 @@
+# pebble (Go service manager shipped in eclipse-temurin base image).
+# Not executed by our containers (CMD runs java only); fix requires an upstream base image rebuild.
+# Re-evaluate when the expiry date is reached.
+CVE-2026-111943 exp:2026-12-31
+CVE-2026-78667 exp:2026-12-31
+CVE-2026-78669 exp:2026-12-31
+CVE-2026-97031 exp:2026-12-31

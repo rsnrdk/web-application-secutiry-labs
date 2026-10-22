@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import rsnrdk.websec.annotation.CurrentUsername;
 
 import java.util.Map;
 
@@ -49,5 +50,13 @@ public class AnnotatedController {
     @GetMapping("/users/{username}")
     public String userDetails(@PathVariable("username") String username) {
         return "Details of user " + username;
+    }
+
+    @GetMapping("/whoami")
+    public Map<String, String> whoAmI(@CurrentUsername String username) {
+        return Map.of(
+                "username", username,
+                "greeting", "Hello, " + username + "!"
+        );
     }
 }

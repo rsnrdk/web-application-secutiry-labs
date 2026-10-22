@@ -11,6 +11,7 @@ import rsnrdk.websec.dto.RegisterRequest;
 import rsnrdk.websec.entity.User;
 import rsnrdk.websec.repository.UserRepository;
 import rsnrdk.websec.security.JwtService;
+import rsnrdk.websec.entity.Role;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class AuthService {
         User user = User.builder()
                 .username(request.username())
                 .password(passwordEncoder.encode(request.password()))
+                .role(Role.USER)
                 .build();
         userRepository.save(user);
         return new AuthResponse(jwtService.generateToken(user), user.getUsername());

@@ -32,6 +32,9 @@ jobs:
           cache: maven
           cache-dependency-path: ${{ matrix.service }}/pom.xml
 
+      - name: Lint (Checkstyle)
+        run: ./mvnw -B checkstyle:check
+
       - name: Build
         run: ./mvnw -B package -DskipTests
 

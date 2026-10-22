@@ -14,6 +14,7 @@ import rsnrdk.websec.entity.Role;
 import rsnrdk.websec.entity.User;
 import rsnrdk.websec.repository.UserRepository;
 import rsnrdk.websec.security.JwtService;
+import rsnrdk.websec.aop.RateLimited;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -45,6 +46,7 @@ public class AuthController {
         return ResponseEntity.ok("User registered successfully");
     }
 
+    @RateLimited(maxCalls = 10, windowSeconds = 60)
     @PostMapping("/login")
     public ResponseEntity<String> login(
             @Valid @RequestBody LoginRequest loginRequest

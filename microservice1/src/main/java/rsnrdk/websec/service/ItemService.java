@@ -8,6 +8,8 @@ import rsnrdk.websec.dto.ItemDto;
 import rsnrdk.websec.entity.Item;
 import rsnrdk.websec.mapper.ItemMapper;
 import rsnrdk.websec.repository.ItemRepository;
+import rsnrdk.websec.aop.RetryOnFailure;
+import rsnrdk.websec.aop.AuditAction;
 
 import java.util.List;
 
@@ -18,6 +20,7 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final ItemMapper itemMapper;
 
+    @RetryOnFailure
     public List<ItemDto> getAllItems() {
         return itemRepository.findAll()
                 .stream()
@@ -25,6 +28,7 @@ public class ItemService {
                 .toList();
     }
 
+    @RetryOnFailure
     public ItemDto getItem(Long id) {
         Item item = itemRepository.findById(id)
                 .orElseThrow(() ->
@@ -37,6 +41,7 @@ public class ItemService {
         return itemMapper.toDto(item);
     }
 
+    @AuditAction("ITEM_CREATED")
     public ItemDto createItem(ItemDto dto) {
         Item item = itemMapper.toEntity(dto);
 
@@ -47,6 +52,7 @@ public class ItemService {
         return itemMapper.toDto(savedItem);
     }
 
+    @AuditAction("ITEM_UPDATED")
     public ItemDto updateItem(ItemDto dto) {
         Item existingItem = itemRepository.findById(dto.getId())
                 .orElseThrow(() ->
@@ -63,6 +69,7 @@ public class ItemService {
         return itemMapper.toDto(updatedItem);
     }
 
+    @AuditAction("ITEM_DELETED")
     public void deleteItem(Long id) {
         if (!itemRepository.existsById(id)) {
             throw new ResponseStatusException(
@@ -72,5 +79,12 @@ public class ItemService {
         }
 
         itemRepository.deleteById(id);
+    }
+
+
+    public void deleteItems(List<Long> ids) {
+        for (Long id : ids) {
+            this.deleteItem(id);
+        }
     }
 }

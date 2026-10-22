@@ -30,6 +30,10 @@ public class AuthController {
             @Valid @RequestBody RegisterRequest request
     ) {
 
+        if (userRepository.existsByUsername(request.username())) {
+            throw new IllegalArgumentException("Username already taken");
+        }
+
         User user = User.builder()
                 .username(request.username())
                 .password(passwordEncoder.encode(request.password()))

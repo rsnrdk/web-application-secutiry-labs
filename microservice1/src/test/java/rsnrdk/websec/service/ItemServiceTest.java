@@ -18,6 +18,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import org.mockito.ArgumentCaptor;
 
 @ExtendWith(MockitoExtension.class)
 class ItemServiceTest {
@@ -264,5 +265,20 @@ class ItemServiceTest {
         verify(itemRepository).findById(999L);
         verify(itemRepository, never()).save(any());
         verify(itemMapper, never()).updateEntity(any(), any());
+    }
+
+    @Test
+    void createItem_dtoWithClientId_resetsIdBeforeSaving() {
+        ItemDto dto = ItemDto.builder().id(42L).name("Injected id").build();
+        Item mapped = Item.builder().id(42L).name("Injected id").build();
+        when(itemMapper.toEntity(dto)).thenReturn(mapped);
+        when(itemRepository.save(any(Item.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        itemService.createItem(dto);
+
+        ArgumentCaptor<Item> captor = ArgumentCaptor.forClass(Item.class);
+        verify(itemRepository).save(captor.capture());
+        assertNull(captor.getValue().getId());
+        assertEquals("Injected id", captor.getValue().getName());
     }
 }

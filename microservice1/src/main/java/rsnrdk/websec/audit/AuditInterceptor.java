@@ -10,9 +10,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import rsnrdk.websec.entity.AuditLog;
 import rsnrdk.websec.repository.AuditLogRepository;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AuditInterceptor implements HandlerInterceptor {
@@ -32,7 +34,7 @@ public class AuditInterceptor implements HandlerInterceptor {
                 ? auth.getName()
                 : "anonymous";
 
-        AuditLog log = AuditLog.builder()
+        AuditLog auditLog = AuditLog.builder()
                 .username(username)
                 .method(request.getMethod())
                 .uri(request.getRequestURI())
@@ -42,9 +44,9 @@ public class AuditInterceptor implements HandlerInterceptor {
                 .build();
 
         try {
-            auditLogRepository.save(log);
-        } catch (Exception ignored) {
-
+            auditLogRepository.save(auditLog);
+        } catch (Exception e) {
+            log.warn("Failed to save audit log", e);
         }
     }
 }

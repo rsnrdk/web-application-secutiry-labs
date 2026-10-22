@@ -13,6 +13,7 @@ import rsnrdk.websec.repository.AuditLogRepository;
 
 import java.time.Instant;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AuditInterceptor implements HandlerInterceptor {
@@ -43,8 +44,8 @@ public class AuditInterceptor implements HandlerInterceptor {
 
         try {
             auditLogRepository.save(log);
-        } catch (Exception ignored) {
-
+        } catch (Exception e) {
+            log.warn("Failed to save audit log", e);
         }
     }
 }

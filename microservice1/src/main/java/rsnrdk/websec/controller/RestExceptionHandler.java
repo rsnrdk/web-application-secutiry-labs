@@ -1,7 +1,10 @@
 package rsnrdk.websec.controller;
 
+import org.springframework.core.task.TaskRejectedException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -30,5 +33,14 @@ public class RestExceptionHandler {
         pd.setDetail("Validation failed");
         pd.setProperty("errors", errors);
         return pd;
+    }
+
+    @ExceptionHandler(TaskRejectedException.class)
+    public ResponseEntity<ProblemDetail> handleTaskRejected(TaskRejectedException ex) {
+        ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.SERVICE_UNAVAILABLE);
+        pd.setDetail("Server is busy, please try again later");
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header(HttpHeaders.RETRY_AFTER, "5")
+                .body(pd);
     }
 }

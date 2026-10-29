@@ -2,6 +2,8 @@ package rsnrdk.websec.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,7 +17,9 @@ import rsnrdk.websec.entity.User;
 import rsnrdk.websec.repository.UserRepository;
 import rsnrdk.websec.security.JwtService;
 import rsnrdk.websec.aop.RateLimited;
+import rsnrdk.websec.async.NotificationService;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final NotificationService notificationService;
 
     @PostMapping("/register")
     public ResponseEntity<String> register(
@@ -42,6 +47,14 @@ public class AuthController {
                 .build();
 
         userRepository.save(user);
+
+        // fire-and-forget: the response does not wait for the email
+        try {
+            notificationService.sendWelcomeEmail(user.getUsername());
+        } catch (TaskRejectedException e) {
+            // executor is full: registration already succeeded, so we only skip the email instead of failing
+            log.warn("Notification executor is full, welcome email for {} was not queued", user.getUsername());
+        }
 
         return ResponseEntity.ok("User registered successfully");
     }

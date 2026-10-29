@@ -8,9 +8,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import rsnrdk.websec.async.NotificationService;
 import rsnrdk.websec.dto.LoginRequest;
 import rsnrdk.websec.dto.RegisterRequest;
 import rsnrdk.websec.entity.Role;
@@ -23,6 +25,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,6 +44,9 @@ class AuthControllerTest {
 
     @Mock
     private JwtService jwtService;
+
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private AuthController authController;
@@ -95,5 +101,27 @@ class AuthControllerTest {
         assertThrows(BadCredentialsException.class,
                 () -> authController.login(new LoginRequest("admin", "wrong")));
         verify(jwtService, never()).generateToken(any());
+    }
+
+    @Test
+    void register_newUsername_triggersWelcomeEmail() {
+        when(userRepository.existsByUsername("newbie")).thenReturn(false);
+        when(passwordEncoder.encode("secret123")).thenReturn("encoded-secret");
+
+        authController.register(new RegisterRequest("newbie", "secret123"));
+
+        verify(notificationService).sendWelcomeEmail("newbie");
+    }
+
+    @Test
+    void register_notificationExecutorFull_stillRegistersUser() {
+        when(userRepository.existsByUsername("newbie")).thenReturn(false);
+        when(passwordEncoder.encode("secret123")).thenReturn("encoded-secret");
+        doThrow(new TaskRejectedException("queue full")).when(notificationService).sendWelcomeEmail("newbie");
+
+        ResponseEntity<String> response = authController.register(new RegisterRequest("newbie", "secret123"));
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(userRepository).save(any());
     }
 }

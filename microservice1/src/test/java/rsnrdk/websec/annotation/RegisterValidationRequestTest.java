@@ -7,6 +7,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import rsnrdk.websec.async.NotificationService;
 import rsnrdk.websec.controller.AuthController;
 import rsnrdk.websec.controller.RestExceptionHandler;
 import rsnrdk.websec.repository.UserRepository;
@@ -32,7 +33,8 @@ class RegisterValidationRequestTest {
                 mock(AuthenticationManager.class),
                 userRepository,
                 mock(PasswordEncoder.class),
-                mock(JwtService.class)
+                mock(JwtService.class),
+                mock(NotificationService.class)
         );
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new RestExceptionHandler())

@@ -1,0 +1,29 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: 006-create-quartz-tables
+      author: rsnrdk
+      comment: Quartz JDBC job store schema (QRTZ_*); Spring Boot is configured with spring.quartz.jdbc.initialize-schema=never
+      changes:
+
+        - sqlFile:
+            path: db/quartz/quartz-tables-postgres.sql
+            splitStatements: true
+            endDelimiter: ;
+            stripComments: true
+
+      rollback:
+
+        - sql:
+            sql: >
+              DROP TABLE QRTZ_FIRED_TRIGGERS;
+              DROP TABLE QRTZ_PAUSED_TRIGGER_GRPS;
+              DROP TABLE QRTZ_SCHEDULER_STATE;
+              DROP TABLE QRTZ_LOCKS;
+              DROP TABLE QRTZ_SIMPLE_TRIGGERS;
+              DROP TABLE QRTZ_CRON_TRIGGERS;
+              DROP TABLE QRTZ_SIMPROP_TRIGGERS;
+              DROP TABLE QRTZ_BLOB_TRIGGERS;
+              DROP TABLE QRTZ_TRIGGERS;
+              DROP TABLE QRTZ_JOB_DETAILS;
+              DROP TABLE QRTZ_CALENDARS;
